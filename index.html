@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <style>
+        .chart-container {
+            max-width: 1050px;
+            border: 3px solid red;
+            margin: 0 auto;
+            /* auto centers the div */
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        svg {
+            border: 2px solid purple;
+            overflow: visible;
+        }
+
+
+        h1 {
+            border: 4px solid green;
+            font-size: 45px;
+        }
+
+        .filler {
+            height: 20rem;
+            text-align: center;
+        }
+
+        .filler p {
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            font-size: 30px;
+            text-align: center;
+            margin: 20px auto;
+            line-height: 1.2;
+            max-width: 600px
+            
+        }
+
+        #scrolly-overlay .scrolly {
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+            font-size: 24px;
+            max-width: 60rem;
+            margin: 3rem auto;
+            background-color: #f4f4f4;
+            padding: 1rem;
+            position: relative;
+
+        }
+
+        #scrolly-overlay .scrolly article {
+            padding: 0;
+            max-width: 30rem;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        #scrolly-overlay .scrolly article .step {
+            min-height: 80vh;
+            margin-bottom: 1rem;
+        }
+
+        #scrolly-overlay .scrolly article .step:last-of-type {
+            margin-bottom: 0;
+        }
+
+        #scrolly-overlay .scrolly article .step.is-active p {
+            background-color: #008080;
+        }
+
+        #scrolly-overlay .scrolly article .step p {
+            margin: 0;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 400;
+            background-color: #5b5b5b;
+            transition: background-color 250ms ease-in-out;
+            color: #f4f4f4;
+        }
+
+        #scrolly-overlay .scrolly figure.sticky {
+            /* this is the key style for the chart */
+            position: sticky;
+            width: 100%;
+            height: 50vh;
+            /* vh is the unit that divdes the viewport in units of 1/100 */
+            /* height is 50 vh = half the height of the viewport */
+            background: #ffffff;
+            margin: 0;
+            top: 25vh;
+            /* this is how high it should be from top */
+
+            left: 0;
+        }
+
+        #scrolly-overlay .scrolly figure.sticky .bar-outer {
+            position: absolute;
+            top: 38%;
+            left: 5%;
+            transform: translateY(-50%);
+            width: 90%;
+            height: 4rem;
+            background-color: #fff;
+        }
+
+        #scrolly-overlay .scrolly figure.sticky .bar-inner1 {
+            width: 22%;
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+            background-color: #ecdd51;
+        }
+
+        #scrolly-overlay .scrolly figure.sticky .bar-inner2 {
+            width: 72%;
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+            background-color: #20da30;
+        }
+
+        #scrolly-overlay .scrolly figure.sticky .bar-inner3 {
+            width: 40%;
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+            background-color: #42b5e2;
+        }
+
+        .spacer {
+            height: 1500px;
+        }
+    </style>
+</head>
+
+<body>
+    <section class='filler'>
+
+        <br/>
+        <br/>
+        <h1>
+            Income Inquality in Japan Became Worse in Past Years
+        </h1>
+
+        <p>
+            Here shows the income share of all residents.
+        </p>
+    </section>
+
+    <section id='scrolly-overlay'>
+
+        <div class='scrolly'>
+
+            <!--  sticky graphic   -->
+            <figure class='sticky'>
+                <p>
+                    Yellow for top 1%, Green for top 10%, Blue for bottom 50%.
+                </p>
+                <!-- put your chart stuff here -->
+                <div class='bar-outer'>
+                    <div class='bar-inner1'> 11% → 13% </div>
+                    <div class='bar-inner2'> 37% → 45% </div>
+                    <div class='bar-inner3'> 19% → 17% </div>
+                </div>
+            </figure>
+
+            <!--  step text   -->
+            <article>
+                <div class='step' data-width1='22%' data-width2='72%' data-width3='40%' data-index='0'>
+                    <p>1980</p>
+                </div>
+                <div class='step' data-width1='26%' data-width2='90%' data-width3='34%' data-index='1'>
+                    <p>2020</p>
+                </div>
+            </article>
+
+        </div>
+
+    </section>
+
+</body>
+
+<!-- add your script blocks at the end -->
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script src="https://unpkg.com/enter-view@1.0.0/enter-view.min.js"></script>
+<!-- https://github.com/russellgoldenberg/enter-view -->
+
+
+<script>
+    const container = d3.select('#scrolly-overlay');
+    const stepSel = container.selectAll('.step'); //final all the step nodes
+
+    function updateChart(index) {
+        const sel = container.select(`[data-index='${index}']`);
+        const width1 = sel.attr('data-width1');
+        const width2 = sel.attr('data-width2');
+        const width3 = sel.attr('data-width3');
+        stepSel.classed('is-active', (d, i) => i === index);
+        container.select('.bar-inner1').style('width', width1);
+        container.select('.bar-inner2').style('width', width2);
+        container.select('.bar-inner3').style('width', width3);
+    }
+
+    function init() {
+
+        enterView({ //our main view function
+            selector: stepSel.nodes(),
+            offset: 0.5, //when the slide is 50% away then trigger your chart
+            enter: el => { //what's supposed to happen when the slide enters?
+                const index = +d3.select(el).attr('data-index'); //extract the data-index attribute. this can be anything: a filter, a date, whatever.
+                updateChart(index);
+            },
+            exit: el => { //what's supposed to happen when the slide exits?
+                let index = +d3.select(el).attr('data-index');
+                index = Math.max(0, index - 1);
+                updateChart(index);
+            }
+        });
+
+    }
+
+    init();
+</script>
